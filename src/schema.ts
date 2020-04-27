@@ -1,6 +1,7 @@
-import { GraphQLObjectType, GraphQLString, GraphQLList, GraphQLSchema, GraphQLIncludeDirective, GraphQLInt } from "graphql"
+import { GraphQLObjectType, GraphQLString, GraphQLList, GraphQLSchema, GraphQLInt, GraphQLBoolean } from "graphql"
 import { TypedFieldConfigMap } from "./ITypedFieldConfigMap"
 import { IBook } from "./IBook"
+import { withFilter } from "apollo-server-express"
 
 const bookType = new GraphQLObjectType({
 	name: "Book",
@@ -30,11 +31,17 @@ const subscriptionType = new GraphQLObjectType({
 	name: "Subscription",
 	fields: {
 		bookAdded: {
+			args: {
+				onlyEven: {
+					type: GraphQLBoolean,
+				}
+			},
 			type: bookType,
-			subscribe: (_1, _2, context: ISchemaContext) => context.getBookStream()
+			subscribe: withFilter(
+				(_1, _2, context: ISchemaContext) => context.getBookStream(),
+				({bookAdded}: {bookAdded: IBook}, {onlyEven}) => (bookAdded.releaseYear % (onlyEven ? 2 : 1)) === 0)
 		} 
 	}
-
 })
 
 export const schema = new GraphQLSchema({
