@@ -19,7 +19,11 @@ const books = [
 // definition and your set of resolvers.
 const server = new ApolloServer({ schema, context: async (req) => (<ISchemaContext>{
 	books,
-})});
+}), rootValue: (x) => {
+	// Root value can be set on iterations, but perhaps not 
+	console.log("rootValue experiment", x)
+	return {rootish: true}
+}});
 
 server.applyMiddleware({app})
 
